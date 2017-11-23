@@ -5,9 +5,11 @@ authors = ["BrainBlasted <brainblastedmods@gmail.com>"]
 
 [dependencies]
 gtk = "0.2"
+xdg = "2.0.1"
 mammut = "0.9.0"
 libappindicator = "0.3.0"
 webbrowser = "0.2.2"
+toml = "0.4"
 
 [patch.crates-io]
 # Mammut needs a patch until a few PRs are merged in.
