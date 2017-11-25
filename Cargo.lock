@@ -1,4 +1,16 @@
 [[package]]
+name = "Trumpet"
+version = "0.1.0"
+dependencies = [
+ "gtk 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libappindicator 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "mammut 0.9.0 (git+https://github.com/klausi/Mammut?branch=klausi)",
+ "toml 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "webbrowser 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xdg 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "adler32"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -595,18 +607,6 @@ dependencies = [
  "serde_derive 1.0.21 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "url 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "masto_gtk_app"
-version = "0.1.0"
-dependencies = [
- "gtk 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libappindicator 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "mammut 0.9.0 (git+https://github.com/klausi/Mammut?branch=klausi)",
- "toml 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "webbrowser 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "xdg 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
