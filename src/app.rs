@@ -36,9 +36,7 @@ use std::io;
 use std::io::prelude::*;
 use std::io::{stdin, stdout};
 
-pub struct App {
-
-}
+pub struct App;
 
 impl App {
     pub fn run(&self) {
