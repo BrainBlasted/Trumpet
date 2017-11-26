@@ -1,7 +1,8 @@
 [package]
-name = "Trumpet"
+name = "trumpet"
 version = "0.1.0"
 authors = ["BrainBlasted <brainblastedmods@gmail.com>"]
+license = "GPL3"
 
 [dependencies]
 gtk = "0.2"
