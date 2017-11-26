@@ -14,14 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-extern crate gtk;
 extern crate xdg;
 extern crate toml;
 extern crate mammut;
 extern crate webbrowser;
-
-use self::gtk::prelude::*;
-use self::gtk::{Button, Window, WindowType};
 
 use self::xdg::BaseDirectories;
 
@@ -40,14 +36,6 @@ pub struct App;
 
 impl App {
     pub fn run(&self) {
-
-        // Checking if GTK properly initializes.
-        if gtk::init().is_err() {
-            println!("Failed to initialize GTK");
-            return;
-        }
-
-        let main_window = Window::new(WindowType::Toplevel);
 
         let xdg_dir = BaseDirectories::with_prefix("Trumpet").unwrap();
 
