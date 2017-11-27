@@ -43,7 +43,7 @@ impl App {
         loop {
             let actions: [String; 5] = [
                 "Make Status".to_string(),
-                "View Timeline".to_string(),
+                "View Public Timeline".to_string(),
                 "View Instance Information".to_string(),
                 "Log Out".to_string(),
                 "Quit".to_string()
@@ -200,24 +200,19 @@ impl App {
         };
 
         let mut masto_instance_url = String::new();
-        loop {
-            print!("Instance URL: https://");
-            stdout().flush().unwrap();
-            match stdin().read_line(&mut masto_instance_url) {
-                Ok(string) => string,
-                Err(_) => {
-                    println!("ERR: Could not read input");
-                    continue;
-                },
-            };
-            break;
-        }
+        print!("Instance URL: https://");
+        stdout().flush().unwrap();
+        stdin().read_line(&mut masto_instance_url).unwrap();
 
         masto_instance_url = format!("https://{}/", masto_instance_url.trim().to_string());
 
         let mut regist = Registration::new(masto_instance_url.clone());
 
-        regist.register(masto_app).expect("Not a valid mastodon instance");
+        if regist.register(masto_app).is_err() {
+            println!("Could not autheticate with the Mastodon instance.");
+            println!("Check that you entered the url of an existing instance.");
+            return self.register();
+        }
 
         let auth_url = regist.authorise().unwrap();
 
