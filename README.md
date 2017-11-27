@@ -1,5 +1,4 @@
 # Trumpet
----
 
 ## What is Trumpet?
 
