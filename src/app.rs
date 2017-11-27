@@ -35,8 +35,6 @@ pub struct App;
 impl App {
     pub fn run(&self) {
 
-        // If the data file can be opened load the configuration
-        // from the file. Otherwise, register new data.
         let mut masto = self.login_or_register();
 
         // Loops until told to stop
@@ -228,9 +226,9 @@ impl App {
         stdin().read_line(&mut auth_code)
             .expect("Could not read auth code");
 
-        let auth_code_str = auth_code.trim().to_string();
+        let auth_code = auth_code.trim().to_string();
 
-        let masto = regist.create_access_token(auth_code_str)
+        let masto = regist.create_access_token(auth_code)
             .expect("Could not create access token. Did you enter the code correctly?");
 
         // Write registration data to config file
