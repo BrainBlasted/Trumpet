@@ -26,9 +26,7 @@ use self::mammut::{Registration, StatusBuilder, Mastodon};
 use self::mammut::apps::{AppBuilder, Scope};
 
 use std::fs::File;
-use std::fs::remove_file;
 
-use std::io;
 use std::io::prelude::*;
 use std::io::{stdin, stdout};
 
@@ -37,27 +35,16 @@ pub struct App;
 impl App {
     pub fn run(&self) {
 
-        let xdg_dir = BaseDirectories::with_prefix("Trumpet").unwrap();
-
-        // Checks if path to trumpet-data already exists; if not,
-        // assigns to a new path.
-        let data_file_path = match xdg_dir.find_data_file("trumpet-data.toml") {
-            Some(path) => path,
-            None => xdg_dir.place_data_file("trumpet-data.toml").unwrap(),
-        };
-
         // If the data file can be opened load the configuration
         // from the file. Otherwise, register new data.
-        let mut masto = match File::open(data_file_path.clone()) {
-            Ok(file) => self.load_conf(file),
-            Err(_) => self.register(),
-        };
+        let mut masto = self.login_or_register();
 
         // Loops until told to stop
         loop {
-            let actions: [String; 4] = [
+            let actions: [String; 5] = [
                 "Make Status".to_string(),
                 "View Timeline".to_string(),
+                "View Instance Information".to_string(),
                 "Log Out".to_string(),
                 "Quit".to_string()
             ];
@@ -66,34 +53,29 @@ impl App {
                 let stat = self.make_status();
                 masto.new_status(stat).unwrap();
             } else if choice == 2 {
-                self.view_timeline(masto.clone());
+                self.view_public_timeline(masto.clone());
             } else if choice == 3 {
-                remove_file(data_file_path.clone()).unwrap();
-                masto = self.register();
+                self.view_instance_info(masto.clone());
             } else if choice == 4 {
+                masto = self.login_or_register();
+            } else if choice == 5 {
                 return;
             }
         }
     }
 
-    pub fn choose_actions(&self, act: &[String]) -> i32 {
+    pub fn choose_actions(&self, act: &[String]) -> u32 {
         println!("Choose an action: ");
         for (i, action) in act.iter().enumerate() {
             println!("[{}] {}", i+1, action);
         }
         let mut input_str;
-        let input: i32;
+        let input: u32;
         loop {
             input_str = String::new();
             print!("Type here: ");
             stdout().flush().unwrap();
-            match stdin().read_line(&mut input_str) {
-                Ok(string) => string,
-                Err(_) => {
-                    println!("ERR: Could not read line");
-                    continue;
-                }
-            };
+            stdin().read_line(&mut input_str).unwrap();
             input = match input_str.trim().parse() {
                 Ok(num) => num,
                 Err(_) => {
@@ -106,11 +88,17 @@ impl App {
         input
     }
 
-    pub fn view_timeline(&self, masto: Mastodon) {
-        let timeline = masto.get_public_timeline(true).unwrap();
+    pub fn view_public_timeline(&self, client: Mastodon) {
+        let timeline = client.get_public_timeline(true).unwrap();
         for (i, status) in timeline.iter().enumerate() {
             println!("{}. @{}: {}", i+1, status.account.username, status.content);
         }
+    }
+
+    pub fn view_instance_info(&self, client: Mastodon) {
+        println!("{} via Trumpet", client.instance().unwrap().uri);
+        println!("Description: {}", client.instance().unwrap().description);
+        println!("Email: {}", client.instance().unwrap().email);
     }
 
     pub fn make_status(&self) -> StatusBuilder {
@@ -141,6 +129,67 @@ impl App {
         Mastodon::from_data(data)
     }
 
+    pub fn login_or_register(&self) -> Mastodon {
+        let xdg_dir = BaseDirectories::with_prefix("Trumpet").unwrap();
+        let data_files = xdg_dir.list_data_files("");
+
+        if data_files.len() == 0 {
+            return self.register();
+        }
+
+        let actions = [
+            "Login to existing instance".to_string(),
+            "Register new instance".to_string()
+        ];
+
+        let mut choice = self.choose_actions(&actions);
+        loop {
+            if choice == 1 {
+                return self.login();
+            } else if choice == 2 {
+                return self.register();
+            } else {
+                choice = self.choose_actions(&actions);
+            }
+        }
+    }
+
+    pub fn login(&self) -> Mastodon {
+        let xdg_dir = BaseDirectories::with_prefix("Trumpet").unwrap();
+        let data_files = xdg_dir.list_data_files("");
+
+        println!("Choose file: ");
+        for (i, data_file) in data_files.iter().enumerate() {
+            println!("[{}] Load {:?}", i+1, data_file);
+        }
+        let mut input: usize;
+        let mut input_str;
+        loop {
+            input_str = String::new();
+            print!("Type here: ");
+            stdout().flush().unwrap();
+            stdin().read_line(&mut input_str).unwrap();
+            input = match input_str.trim().parse() {
+                Ok(num) => num,
+                Err(_) => {
+                    println!("ERR: Could not parse your input");
+                    continue;
+                },
+            };
+            if input > data_files.len() {
+                println!("ERR: Input is greater than number of existing files");
+                continue;
+            }
+            break;
+        }
+        let masto = match File::open(&data_files[input-1]) {
+            Ok(file) => self.load_conf(file),
+            Err(_) => self.register(),
+        };
+
+        masto
+    }
+
     pub fn register(&self) -> Mastodon {
 
         let masto_app = AppBuilder {
@@ -153,8 +202,8 @@ impl App {
         let mut masto_instance_url = String::new();
         loop {
             print!("Instance URL: https://");
-            io::stdout().flush().unwrap();
-            match io::stdin().read_line(&mut masto_instance_url) {
+            stdout().flush().unwrap();
+            match stdin().read_line(&mut masto_instance_url) {
                 Ok(string) => string,
                 Err(_) => {
                     println!("ERR: Could not read input");
@@ -180,8 +229,8 @@ impl App {
             .expect("Could not open web browser");
 
         print!("Auth Code from browser: ");
-        io::stdout().flush().unwrap();
-        io::stdin().read_line(&mut auth_code)
+        stdout().flush().unwrap();
+        stdin().read_line(&mut auth_code)
             .expect("Could not read auth code");
 
         let auth_code_str = auth_code.trim().to_string();
@@ -192,7 +241,8 @@ impl App {
         // Write registration data to config file
         let toml = toml::to_string(&*masto).unwrap();
         let xdg_dir = BaseDirectories::with_prefix("Trumpet").expect("Could not find prefix");
-        let data_file_path = xdg_dir.place_data_file("trumpet-data.toml")
+        let data_file_str = format!("trumpet-data-{}", masto.instance().unwrap().uri);
+        let data_file_path = xdg_dir.place_data_file(data_file_str)
             .expect("Could not place data file");
         let mut file = match File::open(data_file_path.clone()) {
             Ok(file) => file,
