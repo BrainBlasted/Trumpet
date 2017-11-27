@@ -33,6 +33,10 @@ use std::io::{stdin, stdout};
 pub struct App;
 
 impl App {
+    pub fn new() -> App {
+        App
+    }
+
     pub fn run(&self) {
 
         let mut masto = self.login_or_register();
