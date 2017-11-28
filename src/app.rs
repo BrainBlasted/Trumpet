@@ -116,14 +116,14 @@ impl App {
             if client.relationships(&[acc_id]).unwrap()[0].following {
                 println!("You already follow this user.");
             } else {
-                // println!("Following is not yet implemented in Trumpet. Opening web browser for @{}", 
-                //          account_list[0].acct);
-                // webbrowser::open(&account_list[0].url).unwrap();
-                println!("Now following @{}", account_list[0].acct);
-                if client.follow(acc_id).is_err() {
-                    println!("Failed to follow {}", account_list[0].acct);
-                    println!("{:?}", client.follow(acc_id));
-                }
+                println!("Following is not yet implemented in Trumpet. Opening web browser for @{}", 
+                         account_list[0].acct);
+                webbrowser::open(&account_list[0].url).unwrap();
+                // println!("Now following @{}", account_list[0].acct);
+                // if client.follow(acc_id).is_err() {
+                //     println!("Failed to follow {}", account_list[0].acct);
+                //     println!("{:?}", client.follow(acc_id));
+                // }
             }
             return;
         }
@@ -139,13 +139,13 @@ impl App {
         if client.relationships(&[acc_id]).unwrap()[0].following {
             println!("You already follow this user.");
         } else {
-            // println!("Following is not yet implemented in Trumpet. Opening web browser for @{}", 
-            //          account_list[input_num - 1].acct);
-            // webbrowser::open(&account_list[input_num - 1].url).unwrap();
-            if client.follow(acc_id).is_err() {
-                println!("Failed to follow {}", account_list[input_num - 1].acct);
-                println!("{:?}", client.follow(acc_id));
-            }
+            println!("Following is not yet implemented in Trumpet. Opening web browser for @{}", 
+                     account_list[input_num - 1].acct);
+            webbrowser::open(&account_list[input_num - 1].url).unwrap();
+            // if client.follow(acc_id).is_err() {
+            //     println!("Failed to follow {}", account_list[input_num - 1].acct);
+            //     println!("{:?}", client.follow(acc_id));
+            // }
         }
     }
 
