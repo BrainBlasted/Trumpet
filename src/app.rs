@@ -40,12 +40,14 @@ impl App {
     pub fn run(&self) {
 
         let mut masto = self.login_or_register();
+        println!("Logged on for @{}", masto.verify().unwrap().acct);
 
         // Loops until told to stop
         loop {
-            let actions: [String; 5] = [
+            let actions: [String; 6] = [
                 "Make Status".to_string(),
                 "View Public Timeline".to_string(),
+                "Follow a user".to_string(),
                 "View Instance Information".to_string(),
                 "Log Out".to_string(),
                 "Quit".to_string()
@@ -57,53 +59,110 @@ impl App {
             } else if choice == 2 {
                 self.view_public_timeline(masto.clone());
             } else if choice == 3 {
-                self.view_instance_info(masto.clone());
+                self.follow_users(masto.clone());
             } else if choice == 4 {
-                masto = self.login_or_register();
+                self.view_instance_info(masto.clone());
             } else if choice == 5 {
+                masto = self.login_or_register();
+                println!("Logged on for @{}", masto.verify().unwrap().acct);
+            } else if choice == 6 {
                 return;
             }
         }
     }
 
-    pub fn choose_actions(&self, act: &[String]) -> u32 {
+    fn choose_actions(&self, act: &[String]) -> u32 {
         println!("Choose an action: ");
         for (i, action) in act.iter().enumerate() {
             println!("[{}] {}", i+1, action);
         }
-        let mut input_str;
-        let input: u32;
-        loop {
-            input_str = String::new();
-            print!("Type here: ");
-            stdout().flush().unwrap();
-            stdin().read_line(&mut input_str).unwrap();
-            input = match input_str.trim().parse() {
-                Ok(num) => num,
-                Err(_) => {
-                    println!("ERR: Could not parse your input");
-                    continue;
-                },
-            };
-            break;
-        }
+        let input: u32 = self.input_loop() as u32;
         input
     }
 
-    pub fn view_public_timeline(&self, client: Mastodon) {
+    fn input_loop(&self) -> usize {
+        let mut input_str = String::new();
+        let input_num: usize;
+        loop {
+            print!("Type here: ");
+            stdout().flush().unwrap();
+            stdin().read_line(&mut input_str).unwrap();
+            input_num = match input_str.trim().parse() {
+                Ok(num) => num,
+                Err(_) => {
+                    println!("ERR: Not a valid number");
+                    stdout().flush().unwrap();
+                    continue;
+                }
+            };
+            break;
+        }
+        input_num
+    }
+
+    fn follow_users(&self, client: Mastodon) {
+        println!("Who would you like to follow?");
+        let mut user_str = String::new();
+        print!("Type here: ");
+        stdout().flush().unwrap();
+        stdin().read_line(&mut user_str).unwrap();
+
+        let account_list = client.search_accounts(user_str.trim()).unwrap();
+        if account_list.len() == 0 {
+            println!("Could not find any user with the given name.");
+            return;
+        } else if account_list.len() == 1 {
+            let acc_id = account_list[0].id;
+            if client.relationships(&[acc_id]).unwrap()[0].following {
+                println!("You already follow this user.");
+            } else {
+                // println!("Following is not yet implemented in Trumpet. Opening web browser for @{}", 
+                //          account_list[0].acct);
+                // webbrowser::open(&account_list[0].url).unwrap();
+                println!("Now following @{}", account_list[0].acct);
+                if client.follow(acc_id).is_err() {
+                    println!("Failed to follow {}", account_list[0].acct);
+                    println!("{:?}", client.follow(acc_id));
+                }
+            }
+            return;
+        }
+
+        println!("Choose which account to follow: ");
+        for (i, account) in account_list.iter().enumerate() {
+            println!("[{}] @{}", i+1, account.acct);
+        }
+
+        let input_num: usize = self.input_loop();
+
+        let acc_id = account_list[input_num - 1].id;
+        if client.relationships(&[acc_id]).unwrap()[0].following {
+            println!("You already follow this user.");
+        } else {
+            // println!("Following is not yet implemented in Trumpet. Opening web browser for @{}", 
+            //          account_list[input_num - 1].acct);
+            // webbrowser::open(&account_list[input_num - 1].url).unwrap();
+            if client.follow(acc_id).is_err() {
+                println!("Failed to follow {}", account_list[input_num - 1].acct);
+                println!("{:?}", client.follow(acc_id));
+            }
+        }
+    }
+
+    fn view_public_timeline(&self, client: Mastodon) {
         let timeline = client.get_public_timeline(true).unwrap();
         for (i, status) in timeline.iter().enumerate() {
             println!("{}. @{}: {}", i+1, status.account.username, status.content);
         }
     }
 
-    pub fn view_instance_info(&self, client: Mastodon) {
+    fn view_instance_info(&self, client: Mastodon) {
         println!("{} via Trumpet", client.instance().unwrap().uri);
         println!("Description: {}", client.instance().unwrap().description);
         println!("Email: {}", client.instance().unwrap().email);
     }
 
-    pub fn make_status(&self) -> StatusBuilder {
+    fn make_status(&self) -> StatusBuilder {
         // The string sent by the status
         let mut status_str = String::new();
         print!("Status text: ");
@@ -124,14 +183,14 @@ impl App {
 
     }
 
-    pub fn load_conf(&self, mut file: File) -> Mastodon {
+    fn load_conf(&self, mut file: File) -> Mastodon {
         let mut conf = String::new();
         file.read_to_string(&mut conf).unwrap();
         let data: Data = toml::from_str(&conf).unwrap();
         Mastodon::from_data(data)
     }
 
-    pub fn login_or_register(&self) -> Mastodon {
+    fn login_or_register(&self) -> Mastodon {
         let xdg_dir = BaseDirectories::with_prefix("Trumpet").unwrap();
         let data_files = xdg_dir.list_data_files("");
 
@@ -156,7 +215,7 @@ impl App {
         }
     }
 
-    pub fn login(&self) -> Mastodon {
+    fn login(&self) -> Mastodon {
         let xdg_dir = BaseDirectories::with_prefix("Trumpet").unwrap();
         let data_files = xdg_dir.list_data_files("");
 
@@ -165,19 +224,8 @@ impl App {
             println!("[{}] Load {:?}", i+1, data_file);
         }
         let mut input: usize;
-        let mut input_str;
         loop {
-            input_str = String::new();
-            print!("Type here: ");
-            stdout().flush().unwrap();
-            stdin().read_line(&mut input_str).unwrap();
-            input = match input_str.trim().parse() {
-                Ok(num) => num,
-                Err(_) => {
-                    println!("ERR: Could not parse your input");
-                    continue;
-                },
-            };
+            input = self.input_loop();
             if input > data_files.len() {
                 println!("ERR: Input is greater than number of existing files");
                 continue;
@@ -192,13 +240,13 @@ impl App {
         masto
     }
 
-    pub fn register(&self) -> Mastodon {
+    fn register(&self) -> Mastodon {
 
         let masto_app = AppBuilder {
             client_name: "Trumpet",
             redirect_uris: "urn:ietf:wg:oauth:2.0:oob",
             scopes: Scope::All,
-            website: None,
+            website: Some("https://github.com/BrainBlasted/Trumpet"),
         };
 
         let mut masto_instance_url = String::new();
@@ -238,7 +286,7 @@ impl App {
         // Write registration data to config file
         let toml = toml::to_string(&*masto).unwrap();
         let xdg_dir = BaseDirectories::with_prefix("Trumpet").expect("Could not find prefix");
-        let data_file_str = format!("trumpet-data-{}", masto.instance().unwrap().uri);
+        let data_file_str = format!("{}@{}", masto.verify().unwrap().username, masto.instance().unwrap().uri);
         let data_file_path = xdg_dir.place_data_file(data_file_str)
             .expect("Could not place data file");
         let mut file = match File::open(data_file_path.clone()) {

@@ -12,7 +12,7 @@ When getting started with Mastodon, I found that the only useable application
 for Linux was an electron app using an indicator. Given that GNOME is phasing
 out appindicators and I personally resent running more than one electron app
 at once, I decided to make one myself. Since a Rust API wrapper [already
-existed](https://github.com/Aaronepower/Mammut), I decided to take the 
+existed](https://github.com/Aaronepower/Mammut), I decided to take the
 opportunity to learn the language while I worked.
 
 ## What can it do?
@@ -20,6 +20,7 @@ opportunity to learn the language while I worked.
 Right now the features Trumpet supports are:
 
 * Multiple instances
+* Multiple accounts per instance
 * Text-only statuses
 * Public timeline viewing
 * Viewing instance information
@@ -28,7 +29,6 @@ Right now the features Trumpet supports are:
 
 Features I am working on now:
 
-* Multiple accounts per instance
 * Parsing html out of statuses viewed
 * Home timeline viewing
 * Emoji support
