@@ -150,7 +150,13 @@ impl App {
     }
 
     fn view_public_timeline(&self, client: Mastodon) {
-        let timeline = client.get_public_timeline(true).unwrap();
+        let timeline = match client.get_public_timeline(true) {
+            Ok(timeline) => timeline,
+            Err(_) => {
+                println!("Could not view timeline");
+                return;
+            }
+        };
         for (i, status) in timeline.iter().enumerate() {
             println!("{}. @{}: {}", i+1, status.account.username, status.content);
         }
