@@ -44,9 +44,10 @@ impl App {
 
         // Loops until told to stop
         loop {
-            let actions: [String; 6] = [
+            let actions: [String; 7] = [
                 "Make Status".to_string(),
-                "View Public Timeline".to_string(),
+                "View Local Timeline".to_string(),
+                "View Home Timeline".to_string(),
                 "Follow a user".to_string(),
                 "View Instance Information".to_string(),
                 "Log Out".to_string(),
@@ -55,17 +56,23 @@ impl App {
             let choice = self.choose_actions(&actions);
             if choice == 1 {
                 let stat = self.make_status();
-                masto.new_status(stat).unwrap();
+                if masto.new_status(stat).is_err() {
+                    println!("Could not send the status");
+                } else {
+                    println!("Status sent");
+                }
             } else if choice == 2 {
-                self.view_public_timeline(masto.clone());
-            } else if choice == 3 {
-                self.follow_users(masto.clone());
+                self.view_local_timeline(masto.clone());
+            } else if choice == 3{
+                self.view_home_timeline(masto.clone());
             } else if choice == 4 {
-                self.view_instance_info(masto.clone());
+                self.follow_users(masto.clone());
             } else if choice == 5 {
+                self.view_instance_info(masto.clone());
+            } else if choice == 6 {
                 masto = self.login_or_register();
                 println!("Logged on for @{}", masto.verify().unwrap().acct);
-            } else if choice == 6 {
+            } else if choice == 7 {
                 return;
             }
         }
@@ -116,7 +123,7 @@ impl App {
             if client.relationships(&[acc_id]).unwrap()[0].following {
                 println!("You already follow this user.");
             } else {
-                println!("Following is not yet implemented in Trumpet. Opening web browser for @{}", 
+                println!("Following is not yet implemented in Trumpet. Opening web browser for @{}",
                          account_list[0].acct);
                 webbrowser::open(&account_list[0].url).unwrap();
                 // println!("Now following @{}", account_list[0].acct);
@@ -139,7 +146,7 @@ impl App {
         if client.relationships(&[acc_id]).unwrap()[0].following {
             println!("You already follow this user.");
         } else {
-            println!("Following is not yet implemented in Trumpet. Opening web browser for @{}", 
+            println!("Following is not yet implemented in Trumpet. Opening web browser for @{}",
                      account_list[input_num - 1].acct);
             webbrowser::open(&account_list[input_num - 1].url).unwrap();
             // if client.follow(acc_id).is_err() {
@@ -149,8 +156,21 @@ impl App {
         }
     }
 
-    fn view_public_timeline(&self, client: Mastodon) {
+    fn view_local_timeline(&self, client: Mastodon) {
         let timeline = match client.get_public_timeline(true) {
+            Ok(timeline) => timeline,
+            Err(_) => {
+                println!("Could not view timeline");
+                return;
+            }
+        };
+        for (i, status) in timeline.iter().enumerate() {
+            println!("{}. @{}: {}", i+1, status.account.username, status.content);
+        }
+    }
+
+    fn view_home_timeline(&self, client: Mastodon) {
+        let timeline = match client.get_home_timeline() {
             Ok(timeline) => timeline,
             Err(_) => {
                 println!("Could not view timeline");
@@ -286,8 +306,13 @@ impl App {
 
         let auth_code = auth_code.trim().to_string();
 
-        let masto = regist.create_access_token(auth_code)
-            .expect("Could not create access token. Did you enter the code correctly?");
+        let masto = match regist.create_access_token(auth_code) {
+            Ok(reg) => reg,
+            Err(_) => {
+                println!("Could not create an acces token. Double check that you entered your code correctly.");
+                self.register()
+            }
+        };
 
         // Write registration data to config file
         let toml = toml::to_string(&*masto).unwrap();
