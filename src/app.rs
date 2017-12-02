@@ -247,7 +247,7 @@ impl App {
 
         println!("Choose file: ");
         for (i, data_file) in data_files.iter().enumerate() {
-            println!("[{}] Load {:?}", i+1, data_file);
+            println!("[{}] Load {}", i+1, data_file.file_name().unwrap().to_str().unwrap());
         }
         let mut input: usize;
         loop {
