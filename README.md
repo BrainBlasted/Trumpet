@@ -30,7 +30,7 @@ Right now the features Trumpet supports are:
 Features I am working on now:
 
 * Parsing html out of statuses viewed
-* Home timeline viewing
+* **Home timeline viewing** (Issues to work out on the Mammut end)
 * Emoji support
 * GTK GUI
 
