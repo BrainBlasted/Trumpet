@@ -197,6 +197,18 @@ impl App {
         stdin().read_line(&mut status_str).unwrap();
 
         let status_str = status_str.trim().to_string();
+        println!("Spoiler text: ");
+        let yes_no: [String; 2] = ["Yes".to_owned(), "No".to_owned()];
+        let choice = self.choose_actions(&yes_no);
+        let spoiler_text = if choice == 1 {
+            print!("Text here: ");
+            let mut spoiler_str = String::new();
+            stdout().flush().unwrap();
+            stdin().read_line(&mut spoiler_str).unwrap();
+            Some(spoiler_str)
+        } else {
+            None
+        };
 
         //TODO: Allow user to fill fields of StatusBuilder
         StatusBuilder {
@@ -204,7 +216,7 @@ impl App {
             in_reply_to_id: None,
             media_ids: None,
             sensitive: None,
-            spoiler_text: None,
+            spoiler_text: spoiler_text,
             visibility: None,
         }
 
