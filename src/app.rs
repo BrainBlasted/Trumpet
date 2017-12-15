@@ -19,17 +19,21 @@ extern crate xdg;
 extern crate toml;
 extern crate mammut;
 extern crate webbrowser;
+extern crate kuchiki;
 
 use self::xdg::BaseDirectories;
 
 use self::mammut::Data;
 use self::mammut::{Registration, StatusBuilder, Mastodon};
 use self::mammut::apps::{AppBuilder, Scope};
+use self::mammut::entities::status::Status;
 
 use std::fs::File;
 
 use std::io::prelude::*;
 use std::io::{stdin, stdout};
+
+use self::kuchiki::traits::TendrilSink;
 
 pub struct App;
 
@@ -157,6 +161,15 @@ impl App {
         }
     }
 
+    fn display_timeline(&self, timeline: &Vec<Status>) {
+        for (i, status) in timeline.iter().enumerate() {
+            let parser = kuchiki::parse_html();
+            let node_ref = parser.one(&status.content[..]);
+            let content_text = node_ref.text_contents();
+            println!("{}. @{}: {}", i+1, status.account.username, &content_text);
+        }
+    }
+
     fn view_local_timeline(&self, client: Mastodon) {
         let timeline = match client.get_public_timeline(true) {
             Ok(timeline) => timeline,
@@ -165,9 +178,7 @@ impl App {
                 return;
             }
         };
-        for (i, status) in timeline.iter().enumerate() {
-            println!("{}. @{}: {}", i+1, status.account.username, status.content);
-        }
+        self.display_timeline(&timeline);
     }
 
     fn view_home_timeline(&self, client: Mastodon) {
@@ -178,9 +189,7 @@ impl App {
                 return;
             }
         };
-        for (i, status) in timeline.iter().enumerate() {
-            println!("{}. @{}: {}", i+1, status.account.username, status.content);
-        }
+        self.display_timeline(&timeline);
     }
 
     fn view_instance_info(&self, client: Mastodon) {

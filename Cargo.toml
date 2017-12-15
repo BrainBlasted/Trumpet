@@ -9,6 +9,7 @@ xdg = "2.0.1"
 mammut = ">=0.9"
 webbrowser = "0.2.2"
 toml = "0.4"
+kuchiki = "0.6.0"
 
 [patch.crates-io]
 # Mammut needs a patch until a few PRs are merged in.
