@@ -113,14 +113,14 @@ impl App {
         input_num
     }
 
-    fn follow(&self, account: &Account) {
+    fn follow(&self, account: &Account, _client: Mastodon) {
         println!("Following is not yet implemented in Trumpet. Opening web browser for @{}",
                     account.acct);
         webbrowser::open(&account.url).unwrap();
-        // println!("Now following @{}", account_list[0].acct);
-        // if client.follow(acc_id).is_err() {
-        //     println!("Failed to follow {}", account_list[0].acct);
-        //     println!("{:?}", client.follow(acc_id));
+        // if _client.follow(account.id).is_err() {
+        //     println!("Failed to follow {}", account.acct);
+        // } else {
+        //     println!("Now following @{}", account.acct);
         // }
     }
 
@@ -140,7 +140,7 @@ impl App {
             if client.relationships(&[acc_id]).unwrap()[0].following {
                 println!("You already follow this user.");
             } else {
-                self.follow(&account_list[0]);
+                self.follow(&account_list[0], client);
             }
             return;
         }
@@ -156,7 +156,7 @@ impl App {
         if client.relationships(&[acc_id]).unwrap()[0].following {
             println!("You already follow this user.");
         } else {
-            self.follow(&account_list[input_num - 1]);
+            self.follow(&account_list[input_num - 1], client);
         }
     }
 
