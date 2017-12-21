@@ -27,6 +27,7 @@ use self::mammut::Data;
 use self::mammut::{Registration, StatusBuilder, Mastodon};
 use self::mammut::apps::{AppBuilder, Scope};
 use self::mammut::entities::status::Status;
+use self::mammut::entities::account::Account;
 
 use std::fs::File;
 
@@ -112,6 +113,17 @@ impl App {
         input_num
     }
 
+    fn follow(&self, account: &Account) {
+        println!("Following is not yet implemented in Trumpet. Opening web browser for @{}",
+                    account.acct);
+        webbrowser::open(&account.url).unwrap();
+        // println!("Now following @{}", account_list[0].acct);
+        // if client.follow(acc_id).is_err() {
+        //     println!("Failed to follow {}", account_list[0].acct);
+        //     println!("{:?}", client.follow(acc_id));
+        // }
+    }
+
     fn follow_users(&self, client: Mastodon) {
         println!("Who would you like to follow?");
         let mut user_str = String::new();
@@ -128,14 +140,7 @@ impl App {
             if client.relationships(&[acc_id]).unwrap()[0].following {
                 println!("You already follow this user.");
             } else {
-                println!("Following is not yet implemented in Trumpet. Opening web browser for @{}",
-                         account_list[0].acct);
-                webbrowser::open(&account_list[0].url).unwrap();
-                // println!("Now following @{}", account_list[0].acct);
-                // if client.follow(acc_id).is_err() {
-                //     println!("Failed to follow {}", account_list[0].acct);
-                //     println!("{:?}", client.follow(acc_id));
-                // }
+                self.follow(&account_list[0]);
             }
             return;
         }
@@ -151,13 +156,7 @@ impl App {
         if client.relationships(&[acc_id]).unwrap()[0].following {
             println!("You already follow this user.");
         } else {
-            println!("Following is not yet implemented in Trumpet. Opening web browser for @{}",
-                     account_list[input_num - 1].acct);
-            webbrowser::open(&account_list[input_num - 1].url).unwrap();
-            // if client.follow(acc_id).is_err() {
-            //     println!("Failed to follow {}", account_list[input_num - 1].acct);
-            //     println!("{:?}", client.follow(acc_id));
-            // }
+            self.follow(&account_list[input_num - 1]);
         }
     }
 
