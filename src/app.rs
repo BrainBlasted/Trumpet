@@ -113,6 +113,8 @@ impl App {
         input_num
     }
 
+    // Code for following an account; Commented code is logic for when
+    // following via mammut is functional
     fn follow(&self, account: &Account, _client: Mastodon) {
         println!("Following is not yet implemented in Trumpet. Opening web browser for @{}",
                     account.acct);
@@ -124,6 +126,7 @@ impl App {
         // }
     }
 
+    // Interactions for following
     fn follow_users(&self, client: Mastodon) {
         println!("Who would you like to follow?");
         let mut user_str = String::new();
@@ -160,6 +163,7 @@ impl App {
         }
     }
 
+    // Code for printing the timeline to the screen
     fn display_timeline(&self, timeline: &Vec<Status>) {
         for (i, status) in timeline.iter().enumerate() {
             let parser = kuchiki::parse_html();
@@ -169,6 +173,7 @@ impl App {
         }
     }
 
+    // Views the local timeline; fails depending on instance
     fn view_local_timeline(&self, client: Mastodon) {
         let timeline = match client.get_public_timeline(true) {
             Ok(timeline) => timeline,
@@ -180,6 +185,7 @@ impl App {
         self.display_timeline(&timeline);
     }
 
+    // Views the home timeline; fails depending on instance
     fn view_home_timeline(&self, client: Mastodon) {
         let timeline = match client.get_home_timeline() {
             Ok(timeline) => timeline,
@@ -191,12 +197,16 @@ impl App {
         self.display_timeline(&timeline);
     }
 
+    // Exactly as it says on the tin
     fn view_instance_info(&self, client: Mastodon) {
         println!("{} via Trumpet", client.instance().unwrap().uri);
         println!("Description: {}", client.instance().unwrap().description);
         println!("Email: {}", client.instance().unwrap().email);
     }
 
+    // This returns a StatusBuilder based on the options
+    // chosen. The StatusBuilder is then passed into
+    // mammut's status function.
     fn make_status(&self) -> StatusBuilder {
         // The string sent by the status
         let mut status_str = String::new();
@@ -230,6 +240,7 @@ impl App {
 
     }
 
+    // Loads login data from file.
     fn load_conf(&self, mut file: File) -> Mastodon {
         let mut conf = String::new();
         file.read_to_string(&mut conf).unwrap();
@@ -237,6 +248,7 @@ impl App {
         Mastodon::from_data(data)
     }
 
+    // Exactly as it says on the tin
     fn login_or_register(&self) -> Mastodon {
         let xdg_dir = BaseDirectories::with_prefix("Trumpet").unwrap();
         let data_files = xdg_dir.list_data_files("");
@@ -305,6 +317,8 @@ impl App {
 
         let mut regist = Registration::new(masto_instance_url.clone());
 
+        // Checks if the registration process can continue with current
+        // url. If not, restarts the regostration process.
         if regist.register(masto_app).is_err() {
             println!("Could not autheticate with the Mastodon instance.");
             println!("Check that you entered the url of an existing instance.");
