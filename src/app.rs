@@ -119,11 +119,11 @@ impl App {
         println!("Following is not yet implemented in Trumpet. Opening web browser for @{}",
                     account.acct);
         webbrowser::open(&account.url).unwrap();
-        // if _client.follow(account.id).is_err() {
-        //     println!("Failed to follow {}", account.acct);
-        // } else {
-        //     println!("Now following @{}", account.acct);
+        // match _client.follow(account.id) {
+        //     Ok(_) => println!("Now following @{}", account.acct),
+        //     Err(e) => println!("Failed to folllow @{}\n{:?}", account.acct, e)
         // }
+
     }
 
     // Interactions for following
@@ -177,8 +177,9 @@ impl App {
     fn view_local_timeline(&self, client: Mastodon) {
         let timeline = match client.get_public_timeline(true) {
             Ok(timeline) => timeline,
-            Err(_) => {
+            Err(e) => {
                 println!("Could not view timeline");
+                println!("{:?}", e);
                 return;
             }
         };
@@ -189,8 +190,9 @@ impl App {
     fn view_home_timeline(&self, client: Mastodon) {
         let timeline = match client.get_home_timeline() {
             Ok(timeline) => timeline,
-            Err(_) => {
+            Err(e) => {
                 println!("Could not view timeline");
+                println!("{:?}", e);
                 return;
             }
         };
