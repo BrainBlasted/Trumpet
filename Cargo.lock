@@ -338,8 +338,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "mammut"
-version = "0.9.0"
-source = "git+https://github.com/klausi/Mammut?branch=klausi#dde68d6c67f5f316ce4dc4d94911e408bb6bf7fb"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "chrono 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -907,7 +907,7 @@ name = "trumpet"
 version = "0.1.0"
 dependencies = [
  "kuchiki 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "mammut 0.9.0 (git+https://github.com/klausi/Mammut?branch=klausi)",
+ "mammut 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "webbrowser 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "xdg 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1069,7 +1069,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum libflate 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)" = "ae46bcdafa496981e996e57c5be82c0a7f130a071323764c6faa4803619f1e67"
 "checksum log 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)" = "880f77541efa6e5cc74e76910c9884d9859683118839d6a1dc3b11e63512565b"
 "checksum mac 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c41e0c4fef86961ac6d6f8a82609f55f31b05e4fce149ac5710e439df7619ba4"
-"checksum mammut 0.9.0 (git+https://github.com/klausi/Mammut?branch=klausi)" = "<none>"
+"checksum mammut 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)" = "deaf06b9eb07a1c2a94404f8d80252d8c0e81186c672c5629ade0c943c4e99a4"
 "checksum markup5ever 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "047150a0e03b57e638fc45af33a0b63a0362305d5b9f92ecef81df472a4cceb0"
 "checksum matches 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "100aabe6b8ff4e4a7e32c1c13523379802df0772b82466207ac25b013f193376"
 "checksum mime 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)" = "e2e00e17be181010a91dbfefb01660b17311059dc8c7f48b9017677721e732bd"

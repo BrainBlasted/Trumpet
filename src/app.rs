@@ -15,17 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-extern crate xdg;
-extern crate toml;
-extern crate mammut;
-extern crate webbrowser;
 extern crate kuchiki;
+extern crate mammut;
+extern crate toml;
+extern crate webbrowser;
+extern crate xdg;
 
 use self::xdg::BaseDirectories;
 
 use self::mammut::Data;
-use self::mammut::{Registration, StatusBuilder, Mastodon};
-use self::mammut::apps::{AppBuilder, Scope};
+use self::mammut::{Mastodon, Registration, StatusBuilder};
+use self::mammut::apps::{AppBuilder, Scopes};
 use self::mammut::entities::status::Status;
 use self::mammut::entities::account::Account;
 
@@ -44,9 +44,11 @@ impl App {
     }
 
     pub fn run(&self) {
-
         let mut masto = self.login_or_register();
-        println!("Logged on for @{}", masto.verify().unwrap().acct);
+        println!(
+            "Logged on for @{}",
+            masto.verify_credentials().unwrap().acct
+        );
 
         // Loops until told to stop
         loop {
@@ -57,7 +59,7 @@ impl App {
                 "Follow a user".to_string(),
                 "View Instance Information".to_string(),
                 "Log Out".to_string(),
-                "Quit".to_string()
+                "Quit".to_string(),
             ];
             let choice = self.choose_actions(&actions);
             if choice == 1 {
@@ -69,7 +71,7 @@ impl App {
                 }
             } else if choice == 2 {
                 self.view_local_timeline(masto.clone());
-            } else if choice == 3{
+            } else if choice == 3 {
                 self.view_home_timeline(masto.clone());
             } else if choice == 4 {
                 self.follow_users(masto.clone());
@@ -77,7 +79,10 @@ impl App {
                 self.view_instance_info(masto.clone());
             } else if choice == 6 {
                 masto = self.login_or_register();
-                println!("Logged on for @{}", masto.verify().unwrap().acct);
+                println!(
+                    "Logged on for @{}",
+                    masto.verify_credentials().unwrap().acct
+                );
             } else if choice == 7 {
                 return;
             }
@@ -87,7 +92,7 @@ impl App {
     fn choose_actions(&self, act: &[String]) -> u32 {
         println!("Choose an action: ");
         for (i, action) in act.iter().enumerate() {
-            println!("[{}] {}", i+1, action);
+            println!("[{}] {}", i + 1, action);
         }
         let input: u32 = self.input_loop() as u32;
         input
@@ -116,14 +121,15 @@ impl App {
     // Code for following an account; Commented code is logic for when
     // following via mammut is functional
     fn follow(&self, account: &Account, _client: Mastodon) {
-        println!("Following is not yet implemented in Trumpet. Opening web browser for @{}",
-                    account.acct);
+        println!(
+            "Following is not yet implemented in Trumpet. Opening web browser for @{}",
+            account.acct
+        );
         webbrowser::open(&account.url).unwrap();
         // match _client.follow(account.id) {
         //     Ok(_) => println!("Now following @{}", account.acct),
         //     Err(e) => println!("Failed to folllow @{}\n{:?}", account.acct, e)
         // }
-
     }
 
     // Interactions for following
@@ -134,32 +140,37 @@ impl App {
         stdout().flush().unwrap();
         stdin().read_line(&mut user_str).unwrap();
 
-        let account_list = client.search_accounts(user_str.trim()).unwrap();
-        if account_list.len() == 0 {
-            println!("Could not find any user with the given name.");
-            return;
-        } else if account_list.len() == 1 {
-            let acc_id = account_list[0].id;
-            if client.relationships(&[acc_id]).unwrap()[0].following {
-                println!("You already follow this user.");
-            } else {
-                self.follow(&account_list[0], client);
+        let account_list = client
+            .search_accounts(user_str.trim(), None, false)
+            .unwrap()
+            .initial_items;
+        match account_list.len() {
+            0 => {
+                println!("Could not find any user with the given name.");
             }
-            return;
-        }
+            1 => {
+                let acc_id = &account_list[0].id;
+                if client.relationships(&[&acc_id]).unwrap().initial_items[0].following {
+                    println!("You already follow this user.");
+                } else {
+                    self.follow(&account_list[0], client);
+                }
+            }
+            _ => {
+                println!("Choose which account to follow: ");
+                for (i, account) in account_list.iter().enumerate() {
+                    println!("[{}] @{}", i + 1, account.acct);
+                }
 
-        println!("Choose which account to follow: ");
-        for (i, account) in account_list.iter().enumerate() {
-            println!("[{}] @{}", i+1, account.acct);
-        }
+                let input_num: usize = self.input_loop();
 
-        let input_num: usize = self.input_loop();
-
-        let acc_id = account_list[input_num - 1].id;
-        if client.relationships(&[acc_id]).unwrap()[0].following {
-            println!("You already follow this user.");
-        } else {
-            self.follow(&account_list[input_num - 1], client);
+                let acc_id = &account_list[input_num - 1].id;
+                if client.relationships(&[&acc_id]).unwrap().initial_items[0].following {
+                    println!("You already follow this user.");
+                } else {
+                    self.follow(&account_list[input_num - 1], client);
+                }
+            }
         }
     }
 
@@ -169,7 +180,7 @@ impl App {
             let parser = kuchiki::parse_html();
             let node_ref = parser.one(&status.content[..]);
             let content_text = node_ref.text_contents();
-            println!("{}. @{}: {}", i+1, status.account.username, &content_text);
+            println!("{}. @{}: {}", i + 1, status.account.username, &content_text);
         }
     }
 
@@ -196,7 +207,7 @@ impl App {
                 return;
             }
         };
-        self.display_timeline(&timeline);
+        self.display_timeline(&timeline.initial_items);
     }
 
     // Exactly as it says on the tin
@@ -239,7 +250,6 @@ impl App {
             spoiler_text: spoiler_text,
             visibility: None,
         }
-
     }
 
     // Loads login data from file.
@@ -261,7 +271,7 @@ impl App {
 
         let actions = [
             "Login to existing instance".to_string(),
-            "Register new instance".to_string()
+            "Register new instance".to_string(),
         ];
 
         let mut choice = self.choose_actions(&actions);
@@ -282,7 +292,11 @@ impl App {
 
         println!("Choose file: ");
         for (i, data_file) in data_files.iter().enumerate() {
-            println!("[{}] Load {}", i+1, data_file.file_name().unwrap().to_str().unwrap());
+            println!(
+                "[{}] Load {}",
+                i + 1,
+                data_file.file_name().unwrap().to_str().unwrap()
+            );
         }
         let mut input: usize;
         loop {
@@ -293,7 +307,7 @@ impl App {
             }
             break;
         }
-        let masto = match File::open(&data_files[input-1]) {
+        let masto = match File::open(&data_files[input - 1]) {
             Ok(file) => self.load_conf(file),
             Err(_) => self.register(),
         };
@@ -302,11 +316,10 @@ impl App {
     }
 
     fn register(&self) -> Mastodon {
-
         let masto_app = AppBuilder {
             client_name: "Trumpet",
             redirect_uris: "urn:ietf:wg:oauth:2.0:oob",
-            scopes: Scope::All,
+            scopes: Scopes::All,
             website: Some("https://github.com/BrainBlasted/Trumpet"),
         };
 
@@ -333,12 +346,12 @@ impl App {
 
         println!("Opening {}", masto_instance_url);
 
-        webbrowser::open(&auth_url)
-            .expect("Could not open web browser");
+        webbrowser::open(&auth_url).expect("Could not open web browser");
 
         print!("Auth Code from browser: ");
         stdout().flush().unwrap();
-        stdin().read_line(&mut auth_code)
+        stdin()
+            .read_line(&mut auth_code)
             .expect("Could not read auth code");
 
         let auth_code = auth_code.trim().to_string();
@@ -354,8 +367,13 @@ impl App {
         // Write registration data to config file
         let toml = toml::to_string(&*masto).unwrap();
         let xdg_dir = BaseDirectories::with_prefix("Trumpet").expect("Could not find prefix");
-        let data_file_str = format!("{}@{}", masto.verify().unwrap().username, masto.instance().unwrap().uri);
-        let data_file_path = xdg_dir.place_data_file(data_file_str)
+        let data_file_str = format!(
+            "{}@{}",
+            masto.verify_credentials().unwrap().username,
+            masto.instance().unwrap().uri
+        );
+        let data_file_path = xdg_dir
+            .place_data_file(data_file_str)
             .expect("Could not place data file");
         let mut file = match File::open(data_file_path.clone()) {
             Ok(file) => file,
