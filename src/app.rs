@@ -367,11 +367,20 @@ impl App {
         // Write registration data to config file
         let toml = toml::to_string(&*masto).unwrap();
         let xdg_dir = BaseDirectories::with_prefix("Trumpet").expect("Could not find prefix");
-        let data_file_str = format!(
-            "{}@{}",
-            masto.verify_credentials().unwrap().username,
-            masto.instance().unwrap().uri
-        );
+
+        let username = match masto.verify_credentials() {
+            Ok(accnt) => accnt.username,
+            Err(e) => {
+                panic!("Failed verifying credentials with {}", e);
+            }
+        };
+        let instance_uri = match masto.instance() {
+            Ok(inst) => inst.uri,
+            Err(e) => {
+                panic!("Failed receiving instance data with {}", e);
+            }
+        };
+        let data_file_str = format!("{}@{}", username, instance_uri);
         let data_file_path = xdg_dir
             .place_data_file(data_file_str)
             .expect("Could not place data file");
