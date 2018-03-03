@@ -6,7 +6,7 @@ license = "GPL3"
 
 [dependencies]
 xdg = "2.0.1"
-mammut = "0.10.1"
+mammut = { git = "https://github.com/Aaronepower/mammut" }
 webbrowser = "0.2.2"
 toml = "0.4"
 kuchiki = "0.6.0"
