@@ -6,11 +6,7 @@ license = "GPL3"
 
 [dependencies]
 xdg = "2.0.1"
-mammut = ">=0.9"
+mammut = { git = "https://github.com/Aaronepower/mammut" }
 webbrowser = "0.2.2"
 toml = "0.4"
 kuchiki = "0.6.0"
-
-[patch.crates-io]
-# Mammut needs a patch until a few PRs are merged in.
-mammut = { git = "https://github.com/klausi/Mammut", branch = "klausi" }
