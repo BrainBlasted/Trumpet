@@ -1,5 +1,5 @@
 /* Trumpet: A Mastodon client
- * Copyright (C) 2017 Christopher Davis
+ * Copyright (C) 2017-2018 Christopher Davis
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

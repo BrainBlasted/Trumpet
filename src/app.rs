@@ -1,5 +1,5 @@
 /* Trumpet: A Mastodon client
- * Copyright (C) 2017 Christopher Davis
+ * Copyright (C) 2017-2018 Christopher Davis
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,7 +126,9 @@ impl App {
             account.acct
         );
         webbrowser::open(&account.url).unwrap();
-        // match _client.follow(account.id) {
+        // let id: u64 = account.id.parse().unwrap();
+
+        // match _client.follow(id) {
         //     Ok(_) => println!("Now following @{}", account.acct),
         //     Err(e) => println!("Failed to folllow @{}\n{:?}", account.acct, e)
         // }
